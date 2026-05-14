@@ -1,26 +1,22 @@
 <?php
-/**
- * index.php — Interface principal do To-Do List
- * Responsabilidades: buscar tarefas no banco e exibir o HTML.
- * Toda lógica de escrita está em actions.php (separação de responsabilidades).
- */
+
 
 require_once 'db.php';
 
-session_start(); // Necessário para mensagens de erro entre redirecionamentos
+session_start(); 
 
 $pdo = getConnection();
 
-// ── Busca todas as tarefas, pendentes primeiro, depois as concluídas ────────
+
 $stmt = $pdo->query('SELECT * FROM tarefas ORDER BY concluida ASC, criada_em DESC');
 $tarefas = $stmt->fetchAll();
 
-// Conta separado para o resumo no cabeçalho
+
 $total     = count($tarefas);
 $concluidas = count(array_filter($tarefas, fn($t) => $t['concluida']));
 $pendentes  = $total - $concluidas;
 
-// Pega e limpa mensagem de erro da sessão (se houver)
+
 $erro = $_SESSION['erro'] ?? null;
 unset($_SESSION['erro']);
 ?>
@@ -31,17 +27,17 @@ unset($_SESSION['erro']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minhas Tarefas</title>
 
-    <!-- Tailwind CSS via CDN -->
+  
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Font Awesome para ícones -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Google Fonts: Sora (display) + Inter (body) -->
+   
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
     <script>
-        // Configuração do tema personalizado do Tailwind
+       
         tailwind.config = {
             theme: {
                 extend: {
@@ -56,7 +52,7 @@ unset($_SESSION['erro']);
                             700: '#2a2a2a',
                         },
                         accent: {
-                            DEFAULT: '#7c3aed',   // roxo vibrante
+                            DEFAULT: '#7c3aed',   
                             light:   '#a78bfa',
                             glow:    '#7c3aed33',
                         },
@@ -72,7 +68,7 @@ unset($_SESSION['erro']);
     </script>
 
     <style>
-        /* Estilos globais e animações que o Tailwind não cobre diretamente */
+       
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0d0d0d;
@@ -81,26 +77,25 @@ unset($_SESSION['erro']);
             min-height: 100vh;
         }
 
-        /* Entrada suave para os itens da lista */
+        
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to   { opacity: 1; transform: translateY(0); }
         }
         .tarefa-item { animation: slideIn 0.25s ease-out both; }
 
-        /* Linha riscada suave para tarefas concluídas */
+     
         .concluida-texto {
             text-decoration: line-through;
             text-decoration-color: #7c3aed;
             text-decoration-thickness: 2px;
         }
 
-        /* Efeito de brilho no input ao focar */
+        
         .input-glow:focus {
             box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
         }
 
-        /* Scrollbar customizada para navegadores Webkit */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
@@ -110,7 +105,7 @@ unset($_SESSION['erro']);
 
     <div class="max-w-2xl mx-auto px-4 py-12">
 
-        <!-- ── Cabeçalho ─────────────────────────────────────────────────── -->
+      
         <header class="mb-10 text-center">
             <div class="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 rounded-full px-4 py-1 mb-5">
                 <i class="fa-solid fa-sparkles text-accent text-xs"></i>
@@ -123,7 +118,7 @@ unset($_SESSION['erro']);
                 Organize, complete, avance.
             </p>
 
-            <!-- Contadores de resumo -->
+        
             <?php if ($total > 0): ?>
             <div class="flex justify-center gap-6 mt-6">
                 <div class="text-center">
@@ -144,7 +139,6 @@ unset($_SESSION['erro']);
             <?php endif; ?>
         </header>
 
-        <!-- ── Mensagem de erro (validação) ──────────────────────────────── -->
         <?php if ($erro): ?>
         <div class="flex items-center gap-3 bg-red-950/60 border border-red-800/50 rounded-xl px-4 py-3 mb-6 text-red-300 text-sm">
             <i class="fa-solid fa-triangle-exclamation text-red-400"></i>
@@ -152,7 +146,7 @@ unset($_SESSION['erro']);
         </div>
         <?php endif; ?>
 
-        <!-- ── Formulário: adicionar tarefa ──────────────────────────────── -->
+        
         <form action="actions.php" method="POST" class="mb-8">
             <input type="hidden" name="acao" value="adicionar">
             <div class="flex gap-3">
@@ -179,10 +173,10 @@ unset($_SESSION['erro']);
             </div>
         </form>
 
-        <!-- ── Lista de tarefas ───────────────────────────────────────────── -->
+      
         <?php if (empty($tarefas)): ?>
 
-            <!-- Estado vazio -->
+            
             <div class="text-center py-20">
                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-ink-800 border border-zinc-800 mb-5">
                     <i class="fa-regular fa-clipboard text-3xl text-zinc-600"></i>
@@ -197,7 +191,7 @@ unset($_SESSION['erro']);
                 <?php foreach ($tarefas as $index => $tarefa): ?>
                 <?php
                     $concluida = (bool) $tarefa['concluida'];
-                    // Define o delay da animação de entrada com base na posição
+                    
                     $delay = min($index * 50, 400);
                 ?>
                 <li class="tarefa-item group" style="animation-delay: <?= $delay ?>ms">
@@ -205,7 +199,7 @@ unset($_SESSION['erro']);
                                 border <?= $concluida ? 'border-zinc-800' : 'border-zinc-700/60 hover:border-zinc-600' ?>
                                 rounded-xl px-4 py-3.5 transition-all duration-200">
 
-                        <!-- Botão: marcar como concluída / desfazer -->
+                        
                         <form action="actions.php" method="POST" class="shrink-0">
                             <input type="hidden" name="acao" value="alternar">
                             <input type="hidden" name="id"   value="<?= $tarefa['id'] ?>">
@@ -224,18 +218,18 @@ unset($_SESSION['erro']);
                             </button>
                         </form>
 
-                        <!-- Texto da tarefa -->
+                        
                         <span class="flex-1 text-sm leading-relaxed break-words
                                      <?= $concluida ? 'concluida-texto text-zinc-500' : 'text-zinc-100' ?>">
                             <?= htmlspecialchars($tarefa['titulo']) ?>
                         </span>
 
-                        <!-- Data de criação (aparece só no hover em telas maiores) -->
+                        
                         <span class="hidden sm:block text-[11px] text-zinc-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <?= date('d/m H:i', strtotime($tarefa['criada_em'])) ?>
                         </span>
 
-                        <!-- Botão: excluir -->
+                        
                         <form action="actions.php" method="POST" class="shrink-0"
                               onsubmit="return confirm('Excluir esta tarefa?')">
                             <input type="hidden" name="acao" value="excluir">
@@ -257,7 +251,7 @@ unset($_SESSION['erro']);
                 <?php endforeach; ?>
             </ul>
 
-            <!-- Barra de progresso -->
+            
             <?php if ($total > 0): ?>
             <div class="mt-8">
                 <?php $progresso = round(($concluidas / $total) * 100); ?>
@@ -276,7 +270,7 @@ unset($_SESSION['erro']);
 
         <?php endif; ?>
 
-    </div><!-- /max-w-2xl -->
+    </div>
 
 </body>
 </html>
